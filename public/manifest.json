@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "PerceptuaLab",
+  "name": "Perceptual color-palette tool",
   "icons": [
     {
       "src": "favicon.ico",

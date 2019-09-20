@@ -4,7 +4,27 @@ body {
   text-align: center;
 }
 
-.App-header {
+a,
+a:link,
+a:hover,
+a:active,
+a:visited {
+  color: white;
+}
+
+.Controls {
+  display: flex;
+}
+
+.Control {
+  padding: 1rem 2rem;
+}
+
+.StepsControl {
+  flex-grow: 1;
+}
+
+.Colors {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;

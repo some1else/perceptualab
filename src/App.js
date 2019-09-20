@@ -26,7 +26,7 @@ function generateColors(
 
 const colorStyle = c => ({
   backgroundColor: c,
-  color: "white",
+  color: chromajs.contrast(c, "white") > 3 ? "white" : "black",
   width: "calc(100vw / 4)",
   height: "8rem",
   display: "flex",
@@ -43,55 +43,66 @@ function App() {
   const [lumaStart, setLumaStart] = useState(50);
   const [lumaEnd, setLumaEnd] = useState(50);
   const colors = generateColors(
-    parseInt(steps),
-    parseInt(hueStart),
-    parseInt(hueEnd),
-    parseInt(chromaStart),
-    parseInt(chromaEnd),
-    parseInt(lumaStart),
-    parseInt(lumaEnd)
+    parseFloat(steps),
+    parseFloat(hueStart),
+    parseFloat(hueEnd),
+    parseFloat(chromaStart),
+    parseFloat(chromaEnd),
+    parseFloat(lumaStart),
+    parseFloat(lumaEnd)
   );
   return (
     <div className="App">
-      <h2>Steps: </h2>
+      <h1>PerceptuaLab</h1>
       <p>
-        <input
-          type="range"
-          min={2}
-          max={128}
-          value={steps}
-          onChange={e => setSteps(e.target.value)}
-        />
-        <span>{steps}</span>
+        <a href="https://en.wikipedia.org/wiki/CIELAB_color_space#Cylindrical_representation:_CIELCh_or_CIEHLC">
+          Perceptual
+        </a>{" "}
+        color-palette tool.
       </p>
-      <RangeControl
-        title={"Hue"}
-        min={0}
-        max={360}
-        start={hueStart}
-        end={hueEnd}
-        setStart={setHueStart}
-        setEnd={setHueEnd}
-      />
-      <RangeControl
-        title={"Chroma"}
-        min={0}
-        max={100}
-        start={chromaStart}
-        end={chromaEnd}
-        setStart={setChromaStart}
-        setEnd={setChromaEnd}
-      />
-      <RangeControl
-        title={"Luminance"}
-        min={0}
-        max={100}
-        start={lumaStart}
-        end={lumaEnd}
-        setStart={setLumaStart}
-        setEnd={setLumaEnd}
-      />
-      <div className="App-header">
+      <div className="Controls">
+        <div className="StepsControl Control">
+          <h2>Steps: </h2>
+          <p>
+            <input
+              type="range"
+              min={2}
+              max={128}
+              value={steps}
+              onChange={e => setSteps(e.target.value)}
+            />
+            <span>{steps}</span>
+          </p>
+        </div>
+        <RangeControl
+          title={"Hue"}
+          min={0}
+          max={360}
+          start={hueStart}
+          end={hueEnd}
+          setStart={setHueStart}
+          setEnd={setHueEnd}
+        />
+        <RangeControl
+          title={"Chroma"}
+          min={0}
+          max={100}
+          start={chromaStart}
+          end={chromaEnd}
+          setStart={setChromaStart}
+          setEnd={setChromaEnd}
+        />
+        <RangeControl
+          title={"Luminance"}
+          min={0}
+          max={100}
+          start={lumaStart}
+          end={lumaEnd}
+          setStart={setLumaStart}
+          setEnd={setLumaEnd}
+        />
+      </div>
+      <div className="Colors">
         {colors.map(c => (
           <div style={colorStyle(c)}>{c.hex()}</div>
         ))}
@@ -104,7 +115,7 @@ export default App;
 
 const RangeControl = ({ title, min, max, start, setStart, end, setEnd }) => {
   return (
-    <Fragment>
+    <div className="RangeControl Control">
       <h2>{title}</h2>
       <p>
         <label>Start {title}: </label>
@@ -128,6 +139,6 @@ const RangeControl = ({ title, min, max, start, setStart, end, setEnd }) => {
         />
         <span>{end}</span>
       </p>
-    </Fragment>
+    </div>
   );
 };

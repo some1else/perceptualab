@@ -35,7 +35,7 @@ const colorStyle = c => ({
 });
 
 function App() {
-  const [steps, setSteps] = useState(64);
+  const [steps, setSteps] = useState(28);
   const [hueStart, setHueStart] = useState(0);
   const [hueEnd, setHueEnd] = useState(360);
   const [chromaStart, setChromaStart] = useState(100);
@@ -66,8 +66,9 @@ function App() {
           <p>
             <input
               type="range"
-              min={2}
-              max={128}
+              min={4}
+              max={64}
+              step={4}
               value={steps}
               onChange={e => setSteps(e.target.value)}
             />

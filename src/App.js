@@ -1,28 +1,32 @@
 import React, { Fragment, useState } from "react";
 import chromajs from "chroma-js";
 
+import RangeControl from "./components/RangeControl";
+import RangeSlider from "./components/RangeSlider";
+import WheelSlider from "./components/WheelSlider";
+
 import "./App.css";
 
-function generateColors(
-  length,
-  hueStart,
-  hueEnd,
-  chromaStart,
-  chromaEnd,
-  lumaStart,
-  lumaEnd
-) {
-  const remain = hueEnd - hueStart;
-  const angle = remain / length;
-  const chromaStep = (chromaEnd - chromaStart) / length;
-  const lumaStep = (lumaEnd - lumaStart) / length;
-  return Array.from({ length }, (_, i) => {
-    const hue = hueStart + i * angle;
-    const chroma = chromaStart + i * chromaStep;
-    const luma = lumaStart + i * lumaStep;
-    return chromajs.hcl(hue, chroma, luma);
-  });
-}
+// function generateColors(
+//   length,
+//   hueStart,
+//   hueEnd,
+//   chromaStart,
+//   chromaEnd,
+//   lumaStart,
+//   lumaEnd
+// ) {
+//   const remain = hueEnd - hueStart;
+//   const angle = remain / length;
+//   const chromaStep = (chromaEnd - chromaStart) / length;
+//   const lumaStep = (lumaEnd - lumaStart) / length;
+//   return Array.from({ length }, (_, i) => {
+//     const hue = hueStart + i * angle;
+//     const chroma = chromaStart + i * chromaStep;
+//     const luma = lumaStart + i * lumaStep;
+//     return chromajs.hcl(hue, chroma, luma);
+//   });
+// }
 
 const colorStyle = c => ({
   backgroundColor: c,
@@ -42,15 +46,25 @@ function App() {
   const [chromaEnd, setChromaEnd] = useState(100);
   const [lumaStart, setLumaStart] = useState(50);
   const [lumaEnd, setLumaEnd] = useState(50);
-  const colors = generateColors(
-    parseFloat(steps),
-    parseFloat(hueStart),
-    parseFloat(hueEnd),
-    parseFloat(chromaStart),
-    parseFloat(chromaEnd),
-    parseFloat(lumaStart),
-    parseFloat(lumaEnd)
-  );
+
+  const startColor = chromajs.hcl(hueStart, chromaStart, lumaStart);
+  const endColor = chromajs.hcl(hueEnd, chromaEnd, lumaEnd);
+
+  const scale = chromajs
+    .scale([startColor, endColor])
+    .mode("lab")
+    .correctLightness();
+
+  // const colors = generateColors(
+  //   parseFloat(steps),
+  //   parseFloat(hueStart),
+  //   parseFloat(hueEnd),
+  //   parseFloat(chromaStart),
+  //   parseFloat(chromaEnd),
+  //   parseFloat(lumaStart),
+  //   parseFloat(lumaEnd)
+  // );
+
   return (
     <div className="App">
       <h1>PerceptuaLab</h1>
@@ -60,7 +74,26 @@ function App() {
         </a>{" "}
         color-palette tool.
       </p>
-      <div className="Controls">
+      <ColorControl
+        color={startColor}
+        chroma={chromaStart}
+        luma={lumaStart}
+        hue={hueStart}
+        onHueChange={val => setHueStart(val)}
+        onChromaChange={val => setChromaStart(val)}
+        onLumaChange={val => setLumaStart(val)}
+      />
+      <ColorControl
+        color={endColor}
+        chroma={chromaEnd}
+        luma={lumaEnd}
+        hue={hueEnd}
+        onHueChange={val => setHueEnd(val)}
+        onChromaChange={val => setChromaEnd(val)}
+        onLumaChange={val => setLumaEnd(val)}
+      />
+      <ColorMap steps={steps} scale={scale} />
+      <div className="Controls Old">
         <div className="StepsControl Control">
           <h2>Steps: </h2>
           <p>
@@ -97,16 +130,12 @@ function App() {
           title={"Luminance"}
           min={0}
           max={100}
+          step={1}
           start={lumaStart}
           end={lumaEnd}
           setStart={setLumaStart}
           setEnd={setLumaEnd}
         />
-      </div>
-      <div className="Colors">
-        {colors.map(c => (
-          <div style={colorStyle(c)}>{c.hex()}</div>
-        ))}
       </div>
     </div>
   );
@@ -114,32 +143,57 @@ function App() {
 
 export default App;
 
-const RangeControl = ({ title, min, max, start, setStart, end, setEnd }) => {
+const ColorControl = ({
+  hue,
+  chroma,
+  luma,
+  onHueChange,
+  onChromaChange,
+  onLumaChange
+}) => {
+  const color = chromajs.hcl(hue, chroma, luma);
+  const chromaStart = chromajs.hcl(hue, 0, luma);
+  const chromaEnd = chromajs.hcl(hue, 100, luma);
+  const chromaScale = chromajs.scale([chromaStart, chromaEnd]).mode("lab");
+  const lumaStart = chromajs.hcl(hue, chroma, 0);
+  const lumaEnd = chromajs.hcl(hue, chroma, 100);
+  const lumaScale = chromajs.scale([lumaStart, lumaEnd]).mode("lab");
   return (
-    <div className="RangeControl Control">
-      <h2>{title}</h2>
-      <p>
-        <label>Start {title}: </label>
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={start}
-          onChange={e => setStart(e.target.value)}
+    <div className="ColorControl">
+      <WheelSlider
+        color={color}
+        hue={hue}
+        chroma={chroma}
+        luma={luma}
+        onChange={t => onHueChange(t)}
+      />
+      <div className="RangeControls">
+        <RangeSlider
+          color={color}
+          value={chroma}
+          scale={chromaScale}
+          onChange={x => onChromaChange(x * 100)}
         />
-        <span>{start}</span>
-      </p>
-      <p>
-        <label>End {title}: </label>
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={end}
-          onChange={e => setEnd(e.target.value)}
+        <RangeSlider
+          color={color}
+          value={luma}
+          scale={lumaScale}
+          onChange={x => onLumaChange(x * 100)}
         />
-        <span>{end}</span>
-      </p>
+      </div>
+    </div>
+  );
+};
+
+const ColorMap = ({ steps, scale }) => {
+  const stepSize = 1 / steps;
+  const colors = Array.from({ length: steps }, (v, i) => scale(i * stepSize));
+
+  return (
+    <div className="Colors">
+      {colors.map(c => (
+        <div style={colorStyle(c)}>{c.hex()}</div>
+      ))}
     </div>
   );
 };
